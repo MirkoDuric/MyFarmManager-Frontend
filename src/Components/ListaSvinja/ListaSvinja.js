@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { Modal, Button, ListGroup } from "react-bootstrap";
 
 export default function ListaSvinja() {
   const [PigList, setPigList] = useState([]);
@@ -7,6 +8,52 @@ export default function ListaSvinja() {
   const [error, setError] = useState(null);
   const [PageList, setPageList] = useState(1);
   const [Podsjetnici, setPodsjetnici] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [currentPig, setCurrentPig] = useState(null);
+
+  function showPodsjetnici(pig) {
+    setCurrentPig(pig);
+    setShowModal(true);
+  }
+
+  function handleDelete(podsjetnikId) {
+    axios
+      .delete(`http://localhost:8001/podsjetnik/${podsjetnikId}`)
+      .then((response) => {
+        setPodsjetnici((prevPodsjetnici) =>
+          prevPodsjetnici.filter((p) => p.id !== podsjetnikId)
+        );
+      })
+      .catch((error) => {
+        console.error(
+          "Došlo je do greške prilikom brisanja podsjetnika:",
+          error
+        );
+      });
+  }
+  function handleEdit(podsjetnikId, updatedPodsjetnik) {
+    axios
+      .put(
+        `http://localhost:8001/podsjetnik/${podsjetnikId}`,
+        updatedPodsjetnik
+      )
+      .then((response) => {
+        setPodsjetnici((prevPodsjetnici) => {
+          return prevPodsjetnici.map((p) => {
+            if (p.id === podsjetnikId) {
+              return { ...p, ...updatedPodsjetnik };
+            }
+            return p;
+          });
+        });
+      })
+      .catch((error) => {
+        console.error(
+          "Došlo je do greške prilikom ažuriranja podsjetnika:",
+          error
+        );
+      });
+  }
 
   useEffect(() => {
     setLoading(true);
@@ -14,11 +61,11 @@ export default function ListaSvinja() {
       .get(`http://localhost:8001/piginfo/piglist?page=${PageList}`)
       .then((response) => {
         setPigList(response.data);
-        console.log(response.data);
 
-        return axios.get("http://localhost:8001/podsjetnici_za_svinje"); // Vraćanje obećanja kako bismo mogli lančati .then()
+        return axios.get("http://localhost:8001/podsjetnici_za_svinje");
       })
       .then((responsePodsjetnici) => {
+        console.log(responsePodsjetnici.data.rows);
         setPodsjetnici(responsePodsjetnici.data.rows);
       })
       .catch((err) => {
@@ -29,24 +76,15 @@ export default function ListaSvinja() {
         setLoading(false);
       });
   }, [PageList]);
+  const determineButtonColor = (datumPodsjetnika) => {
+    const today = new Date();
+    const reminderDate = new Date(datumPodsjetnika);
 
-  useEffect(() => {
-    console.log("PODSJETNICI:", Podsjetnici);
-  }, [Podsjetnici]);
+    const differenceInDays = (reminderDate - today) / (1000 * 60 * 60 * 24);
 
-  if (loading) {
-    return (
-      <div className="d-flex justify-content-center">
-        <div className="spinner-border" role="status">
-          <span className="sr-only">Učitavanje...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return <div>Došlo je do greške: {error}</div>;
-  }
+    if (differenceInDays <= 10) return "btn-danger";
+    return "btn-warning";
+  };
 
   return (
     <div className="container">
@@ -61,34 +99,37 @@ export default function ListaSvinja() {
         </thead>
         <tbody>
           {PigList.length ? (
-            PigList.map((pig) => (
-              <tr key={pig.id}>
-                <td>{pig.serijski_broj_svinje}</td>
-                <td>{pig.rasa_svinje}</td>
-                <td>
-                  {(() => {
-                    const matchingPodsjetnik = Podsjetnici.find(
-                      (p) => p.id === pig.id
-                    );
-
-                    if (matchingPodsjetnik) {
-                      return (
-                        <button type="button" className="btn btn-danger">
-                          Podsjetnik
-                        </button>
-                      );
-                    }
-                    return <p></p>;
-                  })()}
-                </td>
-
-                <td>
-                  <button type="button" class="btn btn-info">
-                    Info
-                  </button>
-                </td>
-              </tr>
-            ))
+            PigList.map((pig) => {
+              const matchingPodsjetnik = Podsjetnici.find(
+                (p) => p.svinja_id === pig.id
+              );
+              return (
+                <tr key={pig.id}>
+                  <td>{pig.serijski_broj_svinje}</td>
+                  <td>{pig.rasa_svinje}</td>
+                  <td>
+                    {matchingPodsjetnik ? (
+                      <button
+                        onClick={() => showPodsjetnici(pig)}
+                        type="button"
+                        className={`btn ${determineButtonColor(
+                          matchingPodsjetnik.datumpodsjetnika
+                        )}`}
+                      >
+                        Podsjetnik
+                      </button>
+                    ) : (
+                      <p></p>
+                    )}
+                  </td>
+                  <td>
+                    <button type="button" className="btn btn-info">
+                      Info
+                    </button>
+                  </td>
+                </tr>
+              );
+            })
           ) : (
             <tr>
               <td colSpan="5">Nema podataka</td>
@@ -96,7 +137,6 @@ export default function ListaSvinja() {
           )}
         </tbody>
       </table>
-
       <nav aria-label="Page navigation">
         <ul className="pagination">
           <li className="page-item">
@@ -147,6 +187,44 @@ export default function ListaSvinja() {
           </li>
         </ul>
       </nav>
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            Podsjetnici za {currentPig?.serijski_broj_svinje}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <ListGroup>
+            {/* Ovdje ćemo mapirati podsjetnike za trenutnu svinju */}
+            {Podsjetnici.filter((p) => p.svinja_id === currentPig?.id).map(
+              (podsjetnik) => (
+                <ListGroup.Item key={podsjetnik.id}>
+                  {podsjetnik.tekst_podsjetnika}
+                  <Button
+                    className="ml-2"
+                    variant="danger"
+                    onClick={() => handleDelete(podsjetnik.id)}
+                  >
+                    Briši
+                  </Button>
+                  <Button
+                    className="ml-2"
+                    variant="warning"
+                    onClick={() => handleEdit(podsjetnik)}
+                  >
+                    Uredi
+                  </Button>
+                </ListGroup.Item>
+              )
+            )}
+          </ListGroup>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Zatvori
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }
