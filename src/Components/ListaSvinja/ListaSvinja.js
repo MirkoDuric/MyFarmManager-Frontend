@@ -13,39 +13,39 @@ export default function ListaSvinja() {
 
   function showPodsjetnici(pig) {
     setCurrentPig(pig);
+    console.log("PIG", pig);
     setShowModal(true);
   }
 
+  // Funkcija za brisanje podsjetnika
   function handleDelete(podsjetnikId) {
+    console.log("PODSJETNIK ID za brisanje", podsjetnikId);
     axios
-      .delete(`http://localhost:8001/podsjetnik/${podsjetnikId}`)
+      .delete(`http://localhost:8001/podsjetnici/${podsjetnikId}`)
       .then((response) => {
         setPodsjetnici((prevPodsjetnici) =>
           prevPodsjetnici.filter((p) => p.id !== podsjetnikId)
         );
       })
       .catch((error) => {
+        console.log(error);
         console.error(
           "Došlo je do greške prilikom brisanja podsjetnika:",
           error
         );
       });
   }
+  //Funkcija za editovanje podsjetnika
   function handleEdit(podsjetnikId, updatedPodsjetnik) {
+    // Pozivamo API za ažuriranje podsjetnika
     axios
       .put(
-        `http://localhost:8001/podsjetnik/${podsjetnikId}`,
+        `http://localhost:8001/podsjetnici/${podsjetnikId}`,
         updatedPodsjetnik
       )
       .then((response) => {
-        setPodsjetnici((prevPodsjetnici) => {
-          return prevPodsjetnici.map((p) => {
-            if (p.id === podsjetnikId) {
-              return { ...p, ...updatedPodsjetnik };
-            }
-            return p;
-          });
-        });
+        // Ažuriramo lokalni state
+        updateLocalState(podsjetnikId, updatedPodsjetnik);
       })
       .catch((error) => {
         console.error(
@@ -53,6 +53,14 @@ export default function ListaSvinja() {
           error
         );
       });
+  }
+
+  function updateLocalState(podsjetnikId, updatedPodsjetnik) {
+    setPodsjetnici((prevPodsjetnici) => {
+      return prevPodsjetnici.map((p) =>
+        p.id === podsjetnikId ? { ...p, ...updatedPodsjetnik } : p
+      );
+    });
   }
 
   useEffect(() => {
@@ -65,7 +73,7 @@ export default function ListaSvinja() {
         return axios.get("http://localhost:8001/podsjetnici_za_svinje");
       })
       .then((responsePodsjetnici) => {
-        console.log(responsePodsjetnici.data.rows);
+        console.log("PODSJETNICI:", responsePodsjetnici.data.rows);
         setPodsjetnici(responsePodsjetnici.data.rows);
       })
       .catch((err) => {
@@ -76,6 +84,8 @@ export default function ListaSvinja() {
         setLoading(false);
       });
   }, [PageList]);
+
+  //Uzimanje trenutnog datuma i poredjenje sa datumima u podsjetnicima i na osnovu toga odredjivanje boje dugmeta
   const determineButtonColor = (datumPodsjetnika) => {
     const today = new Date();
     const reminderDate = new Date(datumPodsjetnika);
@@ -85,6 +95,21 @@ export default function ListaSvinja() {
     if (differenceInDays <= 10) return "btn-danger";
     return "btn-warning";
   };
+
+  //Loading spiner dok ne dobijem sve podatke nazad
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center">
+        <div className="spinner-border" role="status">
+          <span className="sr-only">Učitavanje...</span>
+        </div>
+      </div>
+    );
+  }
+  // Error poruka ako dodje do greske
+  if (error) {
+    return <div>Došlo je do greške: {error}</div>;
+  }
 
   return (
     <div className="container">
@@ -196,21 +221,25 @@ export default function ListaSvinja() {
         <Modal.Body>
           <ListGroup>
             {/* Ovdje ćemo mapirati podsjetnike za trenutnu svinju */}
-            {Podsjetnici.filter((p) => p.svinja_id === currentPig?.id).map(
+            {Podsjetnici.filter((p) => p?.svinja_id === currentPig?.id).map(
               (podsjetnik) => (
                 <ListGroup.Item key={podsjetnik.id}>
                   {podsjetnik.tekst_podsjetnika}
                   <Button
                     className="ml-2"
                     variant="danger"
-                    onClick={() => handleDelete(podsjetnik.id)}
+                    onClick={() => {
+                      console.log("PODSJETNIK", podsjetnik);
+                      handleDelete(podsjetnik?.id);
+                    }}
                   >
                     Briši
                   </Button>
+
                   <Button
                     className="ml-2"
                     variant="warning"
-                    onClick={() => handleEdit(podsjetnik)}
+                    onClick={() => handleEdit(podsjetnik?.id)}
                   >
                     Uredi
                   </Button>
