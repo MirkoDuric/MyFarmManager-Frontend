@@ -99,13 +99,12 @@ export default function ListaSvinja() {
   //Loading spiner dok ne dobijem sve podatke nazad
   if (loading) {
     return (
-      <div className="d-flex justify-content-center">
-        <div className="spinner-border" role="status">
-          <span className="sr-only">Učitavanje...</span>
-        </div>
+      <div className="spinner-border" role="status">
+        <span className="sr-only">Učitavanje...</span>
       </div>
     );
   }
+
   // Error poruka ako dodje do greske
   if (error) {
     return <div>Došlo je do greške: {error}</div>;
@@ -222,29 +221,37 @@ export default function ListaSvinja() {
           <ListGroup>
             {/* Ovdje ćemo mapirati podsjetnike za trenutnu svinju */}
             {Podsjetnici.filter((p) => p?.svinja_id === currentPig?.id).map(
-              (podsjetnik) => (
-                <ListGroup.Item key={podsjetnik.id}>
-                  {podsjetnik.tekst_podsjetnika}
-                  <Button
-                    className="ml-2"
-                    variant="danger"
-                    onClick={() => {
-                      console.log("PODSJETNIK", podsjetnik);
-                      handleDelete(podsjetnik?.id);
-                    }}
+              (podsjetnik) => {
+                console.log("PODSJETNIK", podsjetnik); // Ovdje dodajemo console.log
+                return (
+                  <ListGroup.Item
+                    key={podsjetnik.id}
+                    className="poljePodsjetnika"
                   >
-                    Briši
-                  </Button>
-
-                  <Button
-                    className="ml-2"
-                    variant="warning"
-                    onClick={() => handleEdit(podsjetnik?.id)}
-                  >
-                    Uredi
-                  </Button>
-                </ListGroup.Item>
-              )
+                    {podsjetnik.tekst_podsjetnika}
+                    {new Date(podsjetnik.datumpodsjetnika).toLocaleDateString(
+                      "hr-HR"
+                    )}
+                    <Button
+                      className="ml-2"
+                      variant="danger"
+                      onClick={() => {
+                        console.log("PODSJETNIK", podsjetnik);
+                        handleDelete(podsjetnik?.id);
+                      }}
+                    >
+                      Briši
+                    </Button>
+                    <Button
+                      className="ml-2"
+                      variant="warning"
+                      onClick={() => handleEdit(podsjetnik?.id)}
+                    >
+                      Uredi
+                    </Button>
+                  </ListGroup.Item>
+                );
+              }
             )}
           </ListGroup>
         </Modal.Body>
