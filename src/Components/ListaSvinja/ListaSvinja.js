@@ -10,6 +10,8 @@ export default function ListaSvinja() {
   const [Podsjetnici, setPodsjetnici] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [currentPig, setCurrentPig] = useState(null);
+  const [editingPodsjetnik, setEditingPodsjetnik] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   function showPodsjetnici(pig) {
     setCurrentPig(pig);
@@ -36,24 +38,33 @@ export default function ListaSvinja() {
       });
   }
   //Funkcija za editovanje podsjetnika
-  function handleEdit(podsjetnikId, updatedPodsjetnik) {
-    // Pozivamo API za ažuriranje podsjetnika
-    axios
-      .put(
-        `http://localhost:8001/podsjetnici/${podsjetnikId}`,
-        updatedPodsjetnik
-      )
-      .then((response) => {
-        // Ažuriramo lokalni state
-        updateLocalState(podsjetnikId, updatedPodsjetnik);
-      })
-      .catch((error) => {
-        console.error(
-          "Došlo je do greške prilikom ažuriranja podsjetnika:",
-          error
-        );
-      });
-  }
+  const openEditModal = (podsjetnik) => {
+    setEditingPodsjetnik(podsjetnik);
+    setShowEditModal(true);
+  };
+
+  const handleEdit = () => {
+    if (editingPodsjetnik) {
+      axios
+        .put(
+          `http://localhost:8001/podsjetnici/${editingPodsjetnik.id}`,
+          editingPodsjetnik
+        )
+        .then((response) => {
+          // Ažuriramo lokalno stanje
+          updateLocalState(editingPodsjetnik.id, editingPodsjetnik);
+          // Resetujemo stanje
+          setShowEditModal(false);
+          setEditingPodsjetnik(null);
+        })
+        .catch((error) => {
+          console.error(
+            "Došlo je do greške prilikom ažuriranja podsjetnika:",
+            error
+          );
+        });
+    }
+  };
 
   function updateLocalState(podsjetnikId, updatedPodsjetnik) {
     setPodsjetnici((prevPodsjetnici) => {
@@ -245,7 +256,8 @@ export default function ListaSvinja() {
                     <Button
                       className="ml-2"
                       variant="warning"
-                      onClick={() => handleEdit(podsjetnik?.id)}
+                      onClick={() => openEditModal(podsjetnik)}
+                      // onClick={() => handleEdit(podsjetnik?.id)}
                     >
                       Uredi
                     </Button>
@@ -258,6 +270,58 @@ export default function ListaSvinja() {
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowModal(false)}>
             Zatvori
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      {/* MODAL ZA EDITVANJE */}
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Uredi podsjetnik</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {editingPodsjetnik && (
+            <div>
+              <label>Datum podsjetnika:</label>
+              <input
+                type="date"
+                value={editingPodsjetnik.datumpodsjetnika}
+                onChange={(e) =>
+                  setEditingPodsjetnik({
+                    ...editingPodsjetnik,
+                    datumpodsjetnika: e.target.value,
+                  })
+                }
+              />
+            </div>
+          )}
+          {editingPodsjetnik && (
+            <div>
+              <label>Tekst podsjetnika:</label>
+              <input
+                type="text"
+                value={editingPodsjetnik.tekst_podsjetnika}
+                onChange={(e) =>
+                  setEditingPodsjetnik({
+                    ...editingPodsjetnik,
+                    tekst_podsjetnika: e.target.value,
+                  })
+                }
+              />
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setShowEditModal(false);
+              setEditingPodsjetnik(null);
+            }}
+          >
+            Otkaži
+          </Button>
+          <Button variant="primary" onClick={handleEdit}>
+            Sačuvaj izmjene
           </Button>
         </Modal.Footer>
       </Modal>
