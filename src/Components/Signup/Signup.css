@@ -1,0 +1,22 @@
+/* Stilizacija signup forme */
+.signup-form {
+  background-color: #fff;
+  width: 40%;
+}
+
+.form-wrapper {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 40px;
+}
+
+.signup-form h2 {
+  margin-bottom: 20px;
+}
+.signup-image {
+  width: 60%;
+  height: 100vh;
+  background-image: url("../../MyFarmManagerImg/farmersasvinjama.jpeg");
+  background-size: cover;
+  background-position: center;
+}
