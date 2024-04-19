@@ -16,7 +16,7 @@ const Login = () => {
   return (
     <Container fluid>
       <Row>
-        <Col sm={6} className="login-form">
+        <Col sm={6} xs={12} className="login-form">
           <div className="form-wrapper">
             <h2>Log In</h2>
             <Form onSubmit={handleSubmit}>
@@ -42,21 +42,24 @@ const Login = () => {
 
               {error && <Alert variant="danger">{error}</Alert>}
 
-              <Button variant="primary" type="submit">
+              <Button variant="primary" type="submit" className="login-button">
                 Log In
               </Button>
 
-              <Link to="/signup" className="btn btn-secondary ml-2">
+              <Link
+                to="/signup"
+                className="btn btn-secondary ml-2 signup-button"
+              >
                 Sign Up
               </Link>
 
-              <Link to="/" className="btn btn-secondary ml-2">
-                Nazad na pocetnu
+              <Link to="/" className="btn btn-secondary ml-2 nazad-button">
+                Na pocetnu
               </Link>
             </Form>
           </div>
         </Col>
-        <Col sm={6} className="login-image"></Col>
+        <Col sm={6} xs={0} className="login-image"></Col>
       </Row>
     </Container>
   );

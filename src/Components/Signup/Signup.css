@@ -1,6 +1,6 @@
 /* Stilizacija signup forme */
 .signup-form {
-  background-color: #fff;
+  background-color: white;
   width: 40%;
 }
 
@@ -16,7 +16,15 @@
 .signup-image {
   width: 60%;
   height: 100vh;
-  background-image: url("../../MyFarmManagerImg/farmersasvinjama.jpeg");
+  background-image: url("../../MyFarmManagerImg/iStock_000000779313_Small.jpeg");
   background-size: cover;
   background-position: center;
+}
+
+.Login {
+  text-decoration: none;
+  color: black;
+}
+.form-label {
+  margin-top: 15px;
 }

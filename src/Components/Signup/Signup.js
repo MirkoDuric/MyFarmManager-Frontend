@@ -22,28 +22,33 @@ const Signup = () => {
       <Row>
         <Col sm={6} className="signup-form">
           <div className="form-wrapper">
+            <h3>Napravite nalog</h3>
+            <p>Vec imate nalog? </p>
+            <Link to={"/login"} className="Login">
+              <p>Log in</p>
+            </Link>
             <h2>Sign Up</h2>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="formBasicEmail">
-                <Form.Label>Email address</Form.Label>
-                <Form.Control type="email" placeholder="Enter email" />
+                <Form.Label>Email adresa</Form.Label>
+                <Form.Control type="email" placeholder="Unesi email" />
               </Form.Group>
 
               <Form.Group controlId="formBasicPassword">
-                <Form.Label>Password</Form.Label>
+                <Form.Label>Lozinka</Form.Label>
                 <Form.Control
                   type="password"
-                  placeholder="Password"
+                  placeholder="Lozinka"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </Form.Group>
 
               <Form.Group controlId="formBasicConfirmPassword">
-                <Form.Label>Confirm Password</Form.Label>
+                <Form.Label>Potvrdi lozinku</Form.Label>
                 <Form.Control
                   type="password"
-                  placeholder="Confirm Password"
+                  placeholder="Potvrdi lozinku"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
@@ -51,11 +56,11 @@ const Signup = () => {
 
               {error && <Alert variant="danger">{error}</Alert>}
 
-              <Button variant="primary" type="submit">
-                Sign Up
+              <Button variant="primary" type="submit" className="signup-button">
+                Registruj se
               </Button>
-              <Link to="/" className="btn btn-secondary ml-2">
-                Nazad na pocetnu
+              <Link to="/" className="btn btn-secondary ml-2 nazad-button">
+                Na pocetnu
               </Link>
             </Form>
           </div>
