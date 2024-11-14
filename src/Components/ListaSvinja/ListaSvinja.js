@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Modal, Button, ListGroup } from "react-bootstrap";
+import { mapIdsToNames } from "../utils/dataTransform";
+import { handleApiError } from "../utils/handleApiError";
+import { validateReminderText, validateReminderDate } from "../utils/validation";
+import { handlePageChange } from "../utils/pagination";
+import { openModal, closeModal } from "../utils/modalUtils";
+import { formatDate, daysBetween } from "../utils/dateUtils";
+import { filterByKey } from "../utils/arrayUtils";
 
 export default function ListaSvinja() {
   const [PigList, setPigList] = useState([]);
@@ -8,106 +15,72 @@ export default function ListaSvinja() {
   const [error, setError] = useState(null);
   const [PageList, setPageList] = useState(1);
   const [Podsjetnici, setPodsjetnici] = useState([]);
+  const [remindersMap, setRemindersMap] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [currentPig, setCurrentPig] = useState(null);
   const [editingPodsjetnik, setEditingPodsjetnik] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
 
-  function showPodsjetnici(pig) {
-    setCurrentPig(pig);
-    console.log("PIG", pig);
-    setShowModal(true);
-  }
-
-  // Funkcija za brisanje podsjetnika
-  function handleDelete(podsjetnikId) {
-    console.log("PODSJETNIK ID za brisanje", podsjetnikId);
-    axios
-      .delete(`http://localhost:8001/podsjetnici/${podsjetnikId}`)
-      .then((response) => {
-        setPodsjetnici((prevPodsjetnici) =>
-          prevPodsjetnici.filter((p) => p.id !== podsjetnikId)
-        );
-      })
-      .catch((error) => {
-        console.log(error);
-        console.error(
-          "Došlo je do greške prilikom brisanja podsjetnika:",
-          error
-        );
-      });
-  }
-  //Funkcija za editovanje podsjetnika
-  const openEditModal = (podsjetnik) => {
-    setEditingPodsjetnik(podsjetnik);
-    setShowEditModal(true);
-  };
-
-  const handleEdit = () => {
-    if (editingPodsjetnik) {
-      axios
-        .put(
-          `http://localhost:8001/podsjetnici/${editingPodsjetnik.id}`,
-          editingPodsjetnik
-        )
-        .then((response) => {
-          // Ažuriramo lokalno stanje
-          updateLocalState(editingPodsjetnik.id, editingPodsjetnik);
-          // Resetujemo stanje
-          setShowEditModal(false);
-          setEditingPodsjetnik(null);
-        })
-        .catch((error) => {
-          console.error(
-            "Došlo je do greške prilikom ažuriranja podsjetnika:",
-            error
-          );
-        });
-    }
-  };
-
-  function updateLocalState(podsjetnikId, updatedPodsjetnik) {
-    setPodsjetnici((prevPodsjetnici) => {
-      return prevPodsjetnici.map((p) =>
-        p.id === podsjetnikId ? { ...p, ...updatedPodsjetnik } : p
-      );
-    });
-  }
-
-  useEffect(() => {
+  // Load pigs and reminders, map reminders by pig ID
+  const loadPigsAndReminders = () => {
     setLoading(true);
     axios
       .get(`http://localhost:8001/piginfo/piglist?page=${PageList}`)
-      .then((response) => {
-        setPigList(response.data);
-
-        return axios.get("http://localhost:8001/podsjetnici_za_svinje");
+      .then(response => setPigList(response.data))
+      .then(() => axios.get("http://localhost:8001/podsjetnici_za_svinje"))
+      .then(response => {
+        const remindersMap = mapIdsToNames(response.data.rows, "svinja_id", "tekst_podsjetnika");
+        setRemindersMap(remindersMap);
+        setPodsjetnici(response.data.rows);
       })
-      .then((responsePodsjetnici) => {
-        console.log("PODSJETNICI:", responsePodsjetnici.data.rows);
-        setPodsjetnici(responsePodsjetnici.data.rows);
-      })
-      .catch((err) => {
-        console.error(err);
-        setError(err.message);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [PageList]);
-
-  //Uzimanje trenutnog datuma i poredjenje sa datumima u podsjetnicima i na osnovu toga odredjivanje boje dugmeta
-  const determineButtonColor = (datumPodsjetnika) => {
-    const today = new Date();
-    const reminderDate = new Date(datumPodsjetnika);
-
-    const differenceInDays = (reminderDate - today) / (1000 * 60 * 60 * 24);
-
-    if (differenceInDays <= 10) return "btn-danger";
-    return "btn-warning";
+      .catch(error => setError(handleApiError(error)))
+      .finally(() => setLoading(false));
   };
 
-  //Loading spiner dok ne dobijem sve podatke nazad
+  useEffect(() => {
+    loadPigsAndReminders();
+  }, [PageList]);
+
+  // Delete reminder
+  const handleDelete = (podsjetnikId) => {
+    axios
+      .delete(`http://localhost:8001/podsjetnici/${podsjetnikId}`)
+      .then(() => setPodsjetnici(prevPodsjetnici => prevPodsjetnici.filter(p => p.id !== podsjetnikId)))
+      .catch(error => setError(handleApiError(error)));
+  };
+
+  // Edit reminder
+  const handleEdit = () => {
+    if (!validateReminderText(editingPodsjetnik.tekst_podsjetnika) ||
+        !validateReminderDate(editingPodsjetnik.datumpodsjetnika)) {
+      setError("Please enter valid reminder data.");
+      return;
+    }
+    axios
+      .put(`http://localhost:8001/podsjetnici/${editingPodsjetnik.id}`, editingPodsjetnik)
+      .then(() => updateLocalState(editingPodsjetnik.id, editingPodsjetnik))
+      .catch(error => setError(handleApiError(error)))
+      .finally(() => {
+        setShowEditModal(false);
+        setEditingPodsjetnik(null);
+      });
+  };
+
+  // Update local reminders state
+  const updateLocalState = (podsjetnikId, updatedPodsjetnik) => {
+    setPodsjetnici(prevPodsjetnici =>
+      prevPodsjetnici.map(p => p.id === podsjetnikId ? { ...p, ...updatedPodsjetnik } : p)
+    );
+  };
+
+  // Show reminders modal for a specific pig
+  const showPodsjetnici = (pig) => openModal(setShowModal, setCurrentPig, pig);
+
+  // Determine button color based on reminder date
+  const determineButtonColor = (datumPodsjetnika) => 
+    daysBetween(new Date(), datumPodsjetnika) <= 10 ? "btn-danger" : "btn-warning";
+
+  // Loading and error states
   if (loading) {
     return (
       <div className="spinner-border" role="status">
@@ -116,7 +89,6 @@ export default function ListaSvinja() {
     );
   }
 
-  // Error poruka ako dodje do greske
   if (error) {
     return <div>Došlo je do greške: {error}</div>;
   }
@@ -135,26 +107,22 @@ export default function ListaSvinja() {
         <tbody>
           {PigList.length ? (
             PigList.map((pig) => {
-              const matchingPodsjetnik = Podsjetnici.find(
-                (p) => p.svinja_id === pig.id
-              );
+              const reminderText = remindersMap[pig.id] || "Nema podsjetnika";
               return (
                 <tr key={pig.id}>
                   <td>{pig.serijski_broj_svinje}</td>
                   <td>{pig.rasa_svinje}</td>
                   <td>
-                    {matchingPodsjetnik ? (
+                    {reminderText !== "Nema podsjetnika" ? (
                       <button
                         onClick={() => showPodsjetnici(pig)}
                         type="button"
-                        className={`btn ${determineButtonColor(
-                          matchingPodsjetnik.datumpodsjetnika
-                        )}`}
+                        className={`btn ${determineButtonColor(reminderText.datumpodsjetnika)}`}
                       >
                         Podsjetnik
                       </button>
                     ) : (
-                      <p></p>
+                      <p>{reminderText}</p>
                     )}
                   </td>
                   <td>
@@ -172,49 +140,30 @@ export default function ListaSvinja() {
           )}
         </tbody>
       </table>
+
+      {/* Pagination controls */}
       <nav aria-label="Page navigation">
         <ul className="pagination">
           <li className="page-item">
             <button
               className="page-link"
-              onClick={() => {
-                setPageList((prevPageList) => {
-                  if (prevPageList > 1) {
-                    console.log(prevPageList - 1);
-                    return prevPageList - 1;
-                  } else {
-                    console.log(prevPageList);
-                    return 1;
-                  }
-                });
-              }}
+              onClick={() => handlePageChange(PageList, setPageList, "previous")}
               aria-label="Previous"
             >
               <span aria-hidden="true">&laquo;</span>
             </button>
           </li>
-          <li className="page-item">
-            <button className="page-link" onClick={() => setPageList(1)}>
-              1
-            </button>
-          </li>
-          <li className="page-item">
-            <button className="page-link" onClick={() => setPageList(2)}>
-              2
-            </button>
-          </li>
-          <li className="page-item">
-            <button className="page-link" onClick={() => setPageList(3)}>
-              3
-            </button>
-          </li>
+          {[1, 2, 3].map((page) => (
+            <li className="page-item" key={page}>
+              <button className="page-link" onClick={() => setPageList(page)}>
+                {page}
+              </button>
+            </li>
+          ))}
           <li className="page-item">
             <button
               className="page-link"
-              onClick={() => {
-                setPageList((prevPageList) => prevPageList + 1);
-                console.log(PageList);
-              }}
+              onClick={() => handlePageChange(PageList, setPageList, "next")}
               aria-label="Next"
             >
               <span aria-hidden="true">&raquo;</span>
@@ -222,58 +171,36 @@ export default function ListaSvinja() {
           </li>
         </ul>
       </nav>
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
+
+      {/* Modal for displaying reminders */}
+      <Modal show={showModal} onHide={() => closeModal(setShowModal, setCurrentPig)}>
         <Modal.Header closeButton>
-          <Modal.Title>
-            Podsjetnici za {currentPig?.serijski_broj_svinje}
-          </Modal.Title>
+          <Modal.Title>Podsjetnici za {currentPig?.serijski_broj_svinje}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <ListGroup>
-            {/* Ovdje ćemo mapirati podsjetnike za trenutnu svinju */}
-            {Podsjetnici.filter((p) => p?.svinja_id === currentPig?.id).map(
-              (podsjetnik) => {
-                console.log("PODSJETNIK", podsjetnik); // Ovdje dodajemo console.log
-                return (
-                  <ListGroup.Item
-                    key={podsjetnik.id}
-                    className="poljePodsjetnika"
-                  >
-                    {podsjetnik.tekst_podsjetnika}
-                    {new Date(podsjetnik.datumpodsjetnika).toLocaleDateString(
-                      "hr-HR"
-                    )}
-                    <Button
-                      className="ml-2"
-                      variant="danger"
-                      onClick={() => {
-                        console.log("PODSJETNIK", podsjetnik);
-                        handleDelete(podsjetnik?.id);
-                      }}
-                    >
-                      Briši
-                    </Button>
-                    <Button
-                      className="ml-2"
-                      variant="warning"
-                      onClick={() => openEditModal(podsjetnik)}
-                      // onClick={() => handleEdit(podsjetnik?.id)}
-                    >
-                      Uredi
-                    </Button>
-                  </ListGroup.Item>
-                );
-              }
-            )}
+            {filterByKey(Podsjetnici, "svinja_id", currentPig?.id).map((podsjetnik) => (
+              <ListGroup.Item key={podsjetnik.id} className="poljePodsjetnika">
+                {podsjetnik.tekst_podsjetnika}
+                {formatDate(podsjetnik.datumpodsjetnika, "hr-HR")}
+                <Button className="ml-2" variant="danger" onClick={() => handleDelete(podsjetnik?.id)}>
+                  Briši
+                </Button>
+                <Button className="ml-2" variant="warning" onClick={() => openModal(setShowEditModal, setEditingPodsjetnik, podsjetnik)}>
+                  Uredi
+                </Button>
+              </ListGroup.Item>
+            ))}
           </ListGroup>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>
+          <Button variant="secondary" onClick={() => closeModal(setShowModal, setCurrentPig)}>
             Zatvori
           </Button>
         </Modal.Footer>
       </Modal>
-      {/* MODAL ZA EDITVANJE */}
+
+      {/* Edit Reminder Modal */}
       <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Uredi podsjetnik</Modal.Title>
@@ -284,7 +211,7 @@ export default function ListaSvinja() {
               <label>Datum podsjetnika:</label>
               <input
                 type="date"
-                value={editingPodsjetnik.datumpodsjetnika}
+                value={editingPodsjetnik.datumpodsjetnika || ""}
                 onChange={(e) =>
                   setEditingPodsjetnik({
                     ...editingPodsjetnik,
@@ -292,14 +219,10 @@ export default function ListaSvinja() {
                   })
                 }
               />
-            </div>
-          )}
-          {editingPodsjetnik && (
-            <div>
               <label>Tekst podsjetnika:</label>
               <input
                 type="text"
-                value={editingPodsjetnik.tekst_podsjetnika}
+                value={editingPodsjetnik.tekst_podsjetnika || ""}
                 onChange={(e) =>
                   setEditingPodsjetnik({
                     ...editingPodsjetnik,
@@ -311,13 +234,7 @@ export default function ListaSvinja() {
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={() => {
-              setShowEditModal(false);
-              setEditingPodsjetnik(null);
-            }}
-          >
+          <Button variant="secondary" onClick={() => setShowEditModal(false)}>
             Otkaži
           </Button>
           <Button variant="primary" onClick={handleEdit}>
