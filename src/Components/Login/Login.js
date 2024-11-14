@@ -1,39 +1,40 @@
 // src/Login.js
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Dodajemo useNavigate za preusmeravanje
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const navigate = useNavigate(); // Kreiramo useNavigate za preusmeravanje
+  const [isLoading, setIsLoading] = useState(false); // Added loading state
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setIsLoading(true); // Start loading
 
-    // Validacija email-a
-    if (!/\S+@\S+\.\S+/.test(email)) {
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
       setError("Please enter a valid email address.");
+      setIsLoading(false); // Stop loading on error
       return;
     }
 
-    // Validacija lozinke (mora biti najmanje 6 karaktera)
+    // Password validation (minimum 6 characters)
     if (password.length < 6) {
       setError("Password must be at least 6 characters long.");
+      setIsLoading(false); // Stop loading on error
       return;
     }
 
-    // Ako je validacija uspešna, resetujemo error i šaljemo podatke backend-u
     setError("");
-
-    // Pozivamo funkciju za autentifikaciju
     authenticateUser(email, password);
   };
 
   const authenticateUser = async (email, password) => {
     try {
       const response = await fetch("http://localhost:8001/login", {
-        // Proveri da li je backend na pravom URL-u
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -41,14 +42,19 @@ const Login = () => {
 
       const data = await response.json();
       if (response.ok) {
-        // Autorizacija uspešna, sačuvaj token i preusmeri korisnika
-        localStorage.setItem("token", data.token); // Sačuvaj JWT token u localStorage
-        navigate("/dashboard"); // Preusmeravanje na dashboard
+        // Save JWT token and user_id to localStorage
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user_id", data.user_id);
+        navigate("/");
       } else {
-        setError("Invalid email or password.");
+        const errorMessage = data.message || "Invalid email or password.";
+        setError(errorMessage);
       }
     } catch (error) {
+      console.error("Error:", error); // Log the error for debugging
       setError("Server error. Please try again later.");
+    } finally {
+      setIsLoading(false); // Stop loading after response
     }
   };
 
@@ -84,8 +90,12 @@ const Login = () => {
               placeholder="Enter your password"
             />
           </div>
-          <button type="submit" className="btn btn-primary w-100">
-            Login
+          <button
+            type="submit"
+            className="btn btn-primary w-100"
+            disabled={isLoading}
+          >
+            {isLoading ? "Loading..." : "Login"}
           </button>
         </form>
       </div>
