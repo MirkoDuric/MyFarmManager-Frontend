@@ -6,7 +6,7 @@ import ListaSvinja from "./Components/ListaSvinja/ListaSvinja";
 import Homepage from "./Components/Homepage/Homepage";
 import Login from "./Components/Login/Login";
 import Signup from "./Components/Signup/Signup";
-import Dashboard from "./Components/Logedinpage/Logedinhome";
+import Logedinpage from "./Components/Logedinpage/Logedinpage";
 
 function App() {
   return (
@@ -15,7 +15,7 @@ function App() {
         <Route path="/" element={<Homepage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/logedinpage" element={<Logedinpage />} />
         <Route path="/ListaSvinja" element={<ListaSvinja />} />
       </Routes>
     </>
