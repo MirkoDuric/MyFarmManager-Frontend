@@ -7,9 +7,6 @@ import {
   isValidEmail,
   isNonEmptyString,
   isPositiveInteger,
-} from "../Utils/utils-ika/validation";
-
-import {
   validateReminderText,
   validateReminderDate,
 } from "../Utils/utils-ika/validation";
