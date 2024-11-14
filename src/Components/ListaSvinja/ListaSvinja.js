@@ -9,10 +9,10 @@ import {
   isPositiveInteger,
 } from "../Utils/utils-ika/validation";
 
-// import {
-//   validateReminderText,
-//   validateReminderDate,
-// } from "../Utils/utils-ika/validation";
+import {
+  validateReminderText,
+  validateReminderDate,
+} from "../Utils/utils-ika/validation";
 import { handlePageChange } from "../Utils/utils-ika/pagination";
 import { openModal, closeModal } from "../Utils/utils-ika/modalUtils";
 import { formatDate, daysBetween } from "../Utils/utils-ika/dateUtils";
