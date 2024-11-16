@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Modal, Button, ListGroup } from "react-bootstrap";
 import { mapIdsToNames } from "../Utils/utils-ika/dataTransform";
-import { handleApiError } from "../Utils/utils-ika/handleApirError";
+import { handleApiError } from "../Utils/utils-ika/handleApiError";
 import {
   isValidEmail,
   isNonEmptyString,
