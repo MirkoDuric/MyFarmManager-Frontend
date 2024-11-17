@@ -28,22 +28,39 @@ const PodsjetnikCard = ({
   }, [showEditModal, datumPodsjetnika, tekstPodsjetnika]);
 
   const handleDelete = () => {
-    DeletePodsjetnikFunktion(id, onDeleteSuccess);
+    DeletePodsjetnikFunktion(id, () => {
+      // This callback is called after successful deletion
+      onDeleteSuccess(id);
+      // Optionally, you can re-fetch all reminders here if necessary
+    }).catch((err) => {
+      console.error("Error deleting reminder:", err);
+      alert("Failed to delete reminder: " + err.message);
+    });
   };
 
-  const handleEdit = () => {
-    const formattedDate = editDate.split("/").reverse().join("-"); // Converts date to ISO format (YYYY-MM-DD)
+  const handleEdit = async () => {
+    const formattedDate = editDate.split("/").reverse().join("-");
     const reminderData = {
       tekstPodsjetnika: editText,
       datumPodsjetnika: formattedDate,
     };
-    EditPodsjetnikFunction(id, reminderData, () => {
-      onEditSuccess(id, reminderData);
-      setShowEditModal(false);
-    }).catch((err) => {
+
+    try {
+      await EditPodsjetnikFunction(id, reminderData, () => {
+        setShowEditModal(false);
+        // This callback is assumed to be where you might handle state updates or cleanup
+      });
+      alert("Reminder updated successfully!");
+      // Optionally, refresh reminders here or in `onEditSuccess`
+      onEditSuccess(
+        id,
+        reminderData.tekstPodsjetnika,
+        reminderData.datumPodsjetnika
+      );
+    } catch (err) {
       console.error("Error editing reminder:", err);
       alert("Failed to update reminder: " + err.message);
-    });
+    }
   };
 
   return (

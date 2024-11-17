@@ -4,36 +4,36 @@ import PodsjetnikCard from "../Utils/PodsjetnikCard/PodsjetnikCard";
 const PodsjetnikList = () => {
   const [reminders, setReminders] = useState([]);
 
-  useEffect(() => {
-    const fetchReminders = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/podsjetnici_za_svinje`
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch reminders");
-        }
-        const data = await response.json();
-        setReminders(data);
-      } catch (error) {
-        console.error("Error fetching reminders:", error.message);
-      }
-    };
+  const fetchReminders = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/podsjetnici_za_svinje`
+      );
+      if (!response.ok) throw new Error("Failed to fetch reminders");
+      const data = await response.json();
+      setReminders(data);
+    } catch (error) {
+      console.error("Error fetching reminders:", error.message);
+    }
+  };
 
+  useEffect(() => {
     fetchReminders();
-  }, []);
+  }, []); // Dependency array is empty to ensure this runs only on mount
 
   const handleDeleteSuccess = (id) => {
-    setReminders(reminders.filter((reminder) => reminder.id !== id));
-  };
-
-  const handleEditSuccess = (id, updatedData) => {
-    setReminders((prevReminders) =>
-      prevReminders.map((reminder) =>
-        reminder.id === id ? { ...reminder, ...updatedData } : reminder
-      )
+    setReminders((currentReminders) =>
+      currentReminders.filter((reminder) => reminder.id !== id)
     );
   };
+
+  const handleEditSuccess = (id, tekstPodsjetnika, datumPodsjetnika) => {
+    fetchReminders(); // This function needs to be adjusted to be callable here
+  };
+
+  useEffect(() => {
+    console.log("Reminders updated:", reminders);
+  }, [reminders]);
 
   return (
     <div>
