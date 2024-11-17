@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, Button, Modal, Form } from "react-bootstrap";
 import { BsInfoCircle } from "react-icons/bs";
 import DeletePodsjetnikFunktion from "../FunctionsBib/DeletePodsjetnikFunction";
+import EditPodsjetnikFunction from "../FunctionsBib/EditPodsjetnikFunction";
 import { formatDate } from "../utils-ika/dateUtils";
 import "./PodsjetnikCard.css";
 
@@ -12,6 +13,7 @@ const PodsjetnikCard = ({
   rasaSvinje,
   serijskiBrojSvinje,
   onDeleteSuccess,
+  onEditSuccess,
 }) => {
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -20,13 +22,28 @@ const PodsjetnikCard = ({
 
   useEffect(() => {
     if (showEditModal) {
-      setEditDate(formatDate(datumPodsjetnika)); // Ensure this formats to dd.mm.yyyy if necessary
+      setEditDate(formatDate(datumPodsjetnika));
       setEditText(tekstPodsjetnika);
     }
   }, [showEditModal, datumPodsjetnika, tekstPodsjetnika]);
 
   const handleDelete = () => {
     DeletePodsjetnikFunktion(id, onDeleteSuccess);
+  };
+
+  const handleEdit = () => {
+    const formattedDate = editDate.split("/").reverse().join("-"); // Converts date to ISO format (YYYY-MM-DD)
+    const reminderData = {
+      tekstPodsjetnika: editText,
+      datumPodsjetnika: formattedDate,
+    };
+    EditPodsjetnikFunction(id, reminderData, () => {
+      onEditSuccess(id, reminderData);
+      setShowEditModal(false);
+    }).catch((err) => {
+      console.error("Error editing reminder:", err);
+      alert("Failed to update reminder: " + err.message);
+    });
   };
 
   return (
@@ -104,12 +121,7 @@ const PodsjetnikCard = ({
             <Button variant="secondary" onClick={() => setShowEditModal(false)}>
               Cancel
             </Button>
-            <Button
-              variant="primary"
-              onClick={() => {
-                /* Save changes */
-              }}
-            >
+            <Button variant="primary" onClick={handleEdit}>
               Save Changes
             </Button>
           </Form>

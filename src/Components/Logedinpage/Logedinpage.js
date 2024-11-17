@@ -5,7 +5,6 @@ const PodsjetnikList = () => {
   const [reminders, setReminders] = useState([]);
 
   useEffect(() => {
-    // Fetch reminders from the API when the component mounts
     const fetchReminders = async () => {
       try {
         const response = await fetch(
@@ -15,18 +14,24 @@ const PodsjetnikList = () => {
           throw new Error("Failed to fetch reminders");
         }
         const data = await response.json();
-        setReminders(data); // Set the fetched reminders into state
+        setReminders(data);
       } catch (error) {
         console.error("Error fetching reminders:", error.message);
       }
     };
 
     fetchReminders();
-  }, []); // The empty array ensures this effect runs only once after the component mounts
+  }, []);
 
   const handleDeleteSuccess = (id) => {
-    setReminders((currentReminders) =>
-      currentReminders.filter((reminder) => reminder.id !== id)
+    setReminders(reminders.filter((reminder) => reminder.id !== id));
+  };
+
+  const handleEditSuccess = (id, updatedData) => {
+    setReminders((prevReminders) =>
+      prevReminders.map((reminder) =>
+        reminder.id === id ? { ...reminder, ...updatedData } : reminder
+      )
     );
   };
 
@@ -40,7 +45,10 @@ const PodsjetnikList = () => {
           tekstPodsjetnika={reminder.tekst_podsjetnika}
           rasaSvinje={reminder.rasa_svinje}
           serijskiBrojSvinje={reminder.serijski_broj_svinje}
-          onDeleteSuccess={() => handleDeleteSuccess(reminder.id)}
+          onDeleteSuccess={handleDeleteSuccess}
+          onEditSuccess={(updatedData) =>
+            handleEditSuccess(reminder.id, updatedData)
+          }
         />
       ))}
     </div>
