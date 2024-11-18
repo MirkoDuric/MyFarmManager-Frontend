@@ -1,74 +1,138 @@
 import React, { useState } from "react";
-import { Container, Row, Col, Form, Button, Alert } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import "./Signup.css";
+import styles from "../../styles/Signup.module.css";
+import {
+  isValidEmail,
+  validatePasswordStrength,
+  isNonEmptyString,
+} from "../Utils/utils-ika/validation";
 
 const Signup = () => {
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
+
+    // Validate inputs
+    if (!isNonEmptyString(formData.firstName) || !isNonEmptyString(formData.lastName)) {
+      setError("First Name and Last Name are required.");
       return;
     }
-    // Dodajte kod za slanje forme
+
+    if (!isValidEmail(formData.email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    const passwordError = validatePasswordStrength(formData.password);
+    if (passwordError) {
+      setError(passwordError);
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setError("");
+    setIsSubmitting(true);
+
+    // Simulated API call
+    setTimeout(() => {
+      console.log("Form submitted successfully:", formData);
+      setIsSubmitting(false);
+    }, 2000);
   };
 
   return (
-    <Container fluid>
-      <Row>
-        <Col sm={6} className="signup-form">
-          <div className="form-wrapper">
-            <h3>Napravite nalog</h3>
-            <p>Vec imate nalog? </p>
-            <Link to={"/login"} className="Login">
-              <p>Log in</p>
+    <div className={styles.signupContainer}>
+      <div className={styles.formSection}>
+        <div className={styles.formCard}>
+          <h2>Create an Account</h2>
+          <p>
+            Already have an account?{" "}
+            <Link to="/login" className={styles.loginLink}>
+              Sign in
             </Link>
-            <h2>Sign Up</h2>
-            <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="formBasicEmail">
-                <Form.Label>Email adresa</Form.Label>
-                <Form.Control type="email" placeholder="Unesi email" />
-              </Form.Group>
-
-              <Form.Group controlId="formBasicPassword">
-                <Form.Label>Lozinka</Form.Label>
-                <Form.Control
-                  type="password"
-                  placeholder="Lozinka"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+          </p>
+          {error && <p className={styles.errorText}>{error}</p>}
+          <form onSubmit={handleSubmit}>
+            <div className={styles.row}>
+              <div className={styles.formGroup}>
+                <input
+                  type="text"
+                  name="firstName"
+                  placeholder="First Name"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  required
                 />
-              </Form.Group>
-
-              <Form.Group controlId="formBasicConfirmPassword">
-                <Form.Label>Potvrdi lozinku</Form.Label>
-                <Form.Control
-                  type="password"
-                  placeholder="Potvrdi lozinku"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+              </div>
+              <div className={styles.formGroup}>
+                <input
+                  type="text"
+                  name="lastName"
+                  placeholder="Last Name"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  required
                 />
-              </Form.Group>
-
-              {error && <Alert variant="danger">{error}</Alert>}
-
-              <Button variant="primary" type="submit" className="signup-button">
-                Registruj se
-              </Button>
-              <Link to="/" className="btn btn-secondary ml-2 nazad-button">
-                Na pocetnu
-              </Link>
-            </Form>
-          </div>
-        </Col>
-        <Col sm={6} className="signup-image"></Col>
-      </Row>
-    </Container>
+              </div>
+            </div>
+            <div className={styles.formGroup}>
+              <input
+                type="email"
+                name="email"
+                placeholder="Email Address"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <input
+                type="password"
+                name="confirmPassword"
+                placeholder="Confirm Password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <button type="submit" className={styles.btnPrimary} disabled={isSubmitting}>
+              {isSubmitting ? "Signing Up..." : "Sign Up"}
+            </button>
+          </form>
+        </div>
+      </div>
+      <div className={styles.imageSection}></div>
+    </div>
   );
 };
 
 export default Signup;
+
