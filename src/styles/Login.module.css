@@ -1,0 +1,116 @@
+.loginContainer {
+  display: flex;
+  height: 100vh;
+  background: url("../MyFarmManagerImg/login-perfect.webp") no-repeat center center;
+  background-size: cover;
+  position: relative;
+}
+
+.formSection {
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(to right, rgba(49, 71, 58, 0.9), rgba(255, 255, 255, 0.4));
+  backdrop-filter: blur(6px);
+  z-index: 2;
+}
+
+.formCard {
+  width: 80%;
+  max-width: 400px;
+  background-color: rgba(255, 255, 255, 0.85);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(49, 71, 58, 0.4);
+  text-align: left;
+}
+
+.formCard h2 {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #31473A;
+  margin-bottom: 15px;
+}
+
+.formCard p {
+  font-size: 1rem;
+  color: #6c757d;
+  margin-bottom: 25px;
+  font-style: italic;
+  letter-spacing: 0.5px;
+  text-align: center;
+  text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.errorText {
+  color: #e74c3c;
+  font-size: 0.95rem;
+  margin-bottom: 15px;
+}
+
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.formGroup input {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.formGroup input:focus {
+  border-color: #31473A;
+  box-shadow: 0 0 8px rgba(49, 71, 58, 0.4);
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 1.1rem;
+  background-color: #FFA800;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.btn:hover {
+  background-color: #D89000;
+  transform: translateY(-2px);
+}
+
+.imageSection {
+  width: 100%;
+  background: url("../MyFarmManagerImg/login-perfect.webp") no-repeat center center;
+  background-size: cover;
+  z-index: 1;
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .loginContainer {
+    flex-direction: column;
+    background-position: top center;
+  }
+
+  .formSection {
+    width: 100%;
+    padding: 20px;
+  }
+
+  .formCard {
+    width: 90%;
+    padding: 20px;
+  }
+}
