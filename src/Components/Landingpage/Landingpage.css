@@ -1,0 +1,60 @@
+body {
+  font-family: "Roboto", sans-serif;
+}
+
+.homepage {
+  position: relative;
+}
+
+.background-image {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background-image: url("../../MyFarmManagerImg/maloprase.webp");
+  background-size: cover;
+  background-position: center;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Transparentni overlay */
+}
+
+.text {
+  position: absolute;
+  top: 40%;
+  left: 25%;
+  transform: translate(-50%, -50%);
+  color: white;
+  text-align: left;
+  width: 45%;
+}
+
+.login-signup {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+.left-text {
+  color: white;
+  text-align: left;
+  position: absolute;
+  top: 60%;
+  left: 25%;
+  transform: translate(-50%, -50%);
+  width: 45%;
+}
+
+button.login {
+  margin-right: 10px;
+}
+
+p {
+  font-size: 18px;
+  line-height: 1.5;
+}
