@@ -1,0 +1,36 @@
+/* ReminderCard.css */
+.reminder-card {
+  width: 50rem;
+  margin: 20px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+}
+.card-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Limit to show 2 lines */
+  -webkit-box-orient: vertical;
+  height: 3em; /* Based on line-height to control visible height */
+}
+.reminder-title {
+  display: flex;
+  align-items: center;
+}
+
+.reminder-title-date {
+  margin-left: auto;
+  font-size: 1.2em;
+  font-weight: 400;
+  margin-left: 10px;
+}
+
+.reminder-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.reminder-body button {
+  margin: 0 5px;
+}
