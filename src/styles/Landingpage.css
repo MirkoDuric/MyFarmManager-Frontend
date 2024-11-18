@@ -10,7 +10,7 @@ body {
   position: relative;
   width: 100%;
   height: 100vh;
-  background-image: url("../../MyFarmManagerImg/maloprase.webp");
+  background-image: url("../MyFarmManagerImg/maloprase.webp");
   background-size: cover;
   background-position: center;
 }

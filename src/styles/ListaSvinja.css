@@ -1,0 +1,86 @@
+.container {
+  background-color: #1c1c1c;
+  color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 80%;
+  margin: auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.addButton {
+  background-color: #4caf50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.addButton:hover {
+  background-color: #45a049;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: none;
+  border-radius: 5px;
+}
+
+.pigsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pigRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pigInput {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+}
+
+.reminderButton {
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  color: white;
+}
+
+.critical {
+  background-color: #ff4d4d;
+}
+
+.warning {
+  background-color: #ffcc00;
+}
+
+.infoButton,
+.moreInfoButton {
+  background-color: #444;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.infoButton:hover,
+.moreInfoButton:hover {
+  background-color: #555;
+}
