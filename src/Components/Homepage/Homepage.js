@@ -3,16 +3,16 @@ import styles from "../../styles/Homepage.module.css";
 import Sidebar from "../Sidebar/Sidebar";
 import PodsjetnikList from "../Utils/PodsjetnikList/PodsjetnikList";
 import { debounce } from "../Utils/utils-ika/debounce";
+import background from "../../MyFarmManagerImg/login-perfect.webp";
 import logo from "../../MyFarmManagerImg/my-farm-manager-logo-main.png";
-import { FaHome, FaListUl, FaBell } from "react-icons/fa";
+import { FaHome, FaListUl, FaBell, FaSearch } from "react-icons/fa";
 
 const Homepage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredReminders, setFilteredReminders] = useState([]);
   const [reminders, setReminders] = useState([]);
-  const [sortCriterion, setSortCriterion] = useState("date"); // Default sort criterion
+  const [sortCriterion, setSortCriterion] = useState("date");
 
-  // Fetch reminders from the backend
   useEffect(() => {
     const fetchReminders = async () => {
       try {
@@ -23,8 +23,8 @@ const Homepage = () => {
           throw new Error("Failed to fetch reminders");
         }
         const data = await response.json();
-        setReminders(data); // Set the reminders
-        setFilteredReminders(data); // Initialize filtered reminders
+        setReminders(data);
+        setFilteredReminders(data);
       } catch (error) {
         console.error("Error fetching reminders:", error.message);
       }
@@ -35,18 +35,21 @@ const Homepage = () => {
 
   const handleSearch = debounce((term) => {
     let results = [...reminders];
-
     if (term.trim()) {
       results = results.filter((reminder) =>
         reminder.tekst_podsjetnika.toLowerCase().includes(term.toLowerCase())
       );
     }
-
-    // Apply sorting after filtering
     results = sortReminders(results, sortCriterion);
-
     setFilteredReminders(results);
   }, 300);
+
+  const handleSearchClick = () => {
+    const results = reminders.filter((reminder) =>
+      reminder.tekst_podsjetnika.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredReminders(results);
+  };
 
   const onSearchChange = (e) => {
     const term = e.target.value;
@@ -71,15 +74,15 @@ const Homepage = () => {
 
   const handleSortChange = (criterion) => {
     setSortCriterion(criterion);
-
-    // Apply sorting to the current filtered reminders
     const sortedReminders = sortReminders([...filteredReminders], criterion);
     setFilteredReminders(sortedReminders);
   };
 
   return (
-    <div className={styles.homepage}>
-      {/* Header Section */}
+    <div
+      className={styles.homepage}
+      style={{ backgroundImage: `url(${background})` }}
+    >
       <header className={styles.header}>
         <div className={styles.logoSection}>
           <img src={logo} alt="My Farm Manager Logo" className={styles.logo} />
@@ -88,31 +91,39 @@ const Homepage = () => {
         <div className={styles.profileSection}>
           <div className={styles.navigation}>
             <button className={styles.navButton}>
-              <FaHome className={styles.icon} />
+              <FaHome />
             </button>
             <button className={styles.navButton}>
-              <FaListUl className={styles.icon} />
+              <FaListUl />
             </button>
             <button className={styles.navButton}>
-              <FaBell className={styles.icon} />
+              <FaBell />
             </button>
           </div>
           <button className={styles.logoutButton}>Log out</button>
         </div>
       </header>
-
-      {/* Sidebar and Main Content */}
       <div className={styles.content}>
         <Sidebar />
         <main className={styles.main}>
           <div className={styles.searchBar}>
+            <FaSearch
+              className={styles.searchIcon}
+              onClick={handleSearchClick}
+            />
             <input
               type="text"
               className={styles.searchInput}
-              placeholder="Pretraži podsjetnike..."
+              placeholder="Search reminders..."
               value={searchTerm}
               onChange={onSearchChange}
             />
+            <button
+              className={styles.searchButton}
+              onClick={handleSearchClick}
+            >
+              Search
+            </button>
           </div>
           <div className={styles.sortOptions}>
             <button

@@ -20,6 +20,9 @@ const Sidebar = () => {
         <button className={styles.button}>Vakcine</button>
         <button className={styles.button}>Lista svinja</button>
       </div>
+      <div className={styles.sidebarFooter}>
+        <p>&copy; 2024 My Farm Manager</p>
+      </div>
     </aside>
   );
 };

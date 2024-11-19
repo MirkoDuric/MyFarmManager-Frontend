@@ -1,10 +1,15 @@
 /* ReminderCard.css */
 .reminder-card {
-  width: 50rem;
-  margin: 20px;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  width: 100%; /* Make it responsive */
+  max-width: 600px; /* Adjust as needed */
+  margin: 0 auto; /* Center align */
+  padding: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-size: 0.9rem; /* Reduce font size */
 }
+
 .card-text {
+  font-size: 0.85rem;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -34,3 +39,13 @@
 .reminder-body button {
   margin: 0 5px;
 }
+
+.reminders {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 500px; /* Adjust height as needed */
+  overflow-y: auto; /* Enable vertical scrolling */
+  padding-right: 1rem; /* Prevent scroll bar overlap */
+}
+

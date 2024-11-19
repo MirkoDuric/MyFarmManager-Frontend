@@ -44,25 +44,21 @@ const PodsjetnikCard = ({
       tekstPodsjetnika: editText,
       datumPodsjetnika: formattedDate,
     };
-
+  
     try {
       await EditPodsjetnikFunction(id, reminderData, () => {
         setShowEditModal(false);
-        // This callback is assumed to be where you might handle state updates or cleanup
+  
+        // Update the reminder in the reminders state
+        onEditSuccess(id, reminderData.tekstPodsjetnika, reminderData.datumPodsjetnika);
       });
       alert("Reminder updated successfully!");
-      // Optionally, refresh reminders here or in `onEditSuccess`
-      onEditSuccess(
-        id,
-        reminderData.tekstPodsjetnika,
-        reminderData.datumPodsjetnika
-      );
     } catch (err) {
       console.error("Error editing reminder:", err);
       alert("Failed to update reminder: " + err.message);
     }
   };
-
+  
   return (
     <>
       <Card className="reminder-card">
